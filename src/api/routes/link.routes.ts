@@ -1,33 +1,16 @@
-import type {  Request, Response, NextFunction } from "express";
-import {Router} from "express";
+import { Router } from "express";
+import * as linkController from "../../controller/link.controller.js";
+import { optionalAuthMiddleware, requireAuthMiddleware } from "../middleware/auth.js";
+
 const router = Router();
 
-/**
- * POST /api/v1/links
- * Purpose: Create a short URL
- * Body: { url: string }
- */
-router.post(
-  "/",
-  (req: Request, res: Response) => {
-    // TEMP: no controller yet
-    res.status(501).json({
-      message: "Not implemented yet",
-    });
-  }
-);
+// Create link (anonymous or registered)
+router.post("/", optionalAuthMiddleware, linkController.createLink);
 
-/**
- * GET /api/v1/links/:code
- * Purpose: Redirect to original URL
- */
-router.get(
-  "/:code",
-  (req: Request, res: Response) => {
-    res.status(501).json({
-      message: `Lookup for code ${req.params.code} not implemented`,
-    });
-  }
-);
+// Get original link by code
+router.get("/:code", linkController.getLink);
+
+// Delete link (registered users only)
+router.delete("/:code", requireAuthMiddleware, linkController.deleteLink);
 
 export default router;
