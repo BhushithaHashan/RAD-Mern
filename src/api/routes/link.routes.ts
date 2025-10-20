@@ -4,13 +4,32 @@ import { optionalAuthMiddleware, requireAuthMiddleware } from "../middleware/aut
 
 const router = Router();
 
-// Create link (anonymous or registered)
+/**
+ * =====================================
+ * PUBLIC ROUTES
+ * =====================================
+ */
+
+// Create link (anonymous OR registered user)
 router.post("/", optionalAuthMiddleware, linkController.createLink);
 
-// Get original link by code
+// Resolve short link (redirect or get original)
 router.get("/:code", linkController.getLink);
 
-// Delete link (registered users only)
-router.delete("/:code", requireAuthMiddleware, linkController.deleteLink);
+/**
+ * =====================================
+ * AUTHENTICATED ROUTES
+ * =====================================
+ */
+
+// Apply auth middleware to all routes below
+router.use(optionalAuthMiddleware); // parse token if present
+router.use(requireAuthMiddleware);  // enforce authentication
+
+// Get all links owned by logged-in user
+router.get("/me", linkController.getMyLinks);
+
+// Delete link (only by owner)
+router.delete("/:code", linkController.deleteLink);
 
 export default router;

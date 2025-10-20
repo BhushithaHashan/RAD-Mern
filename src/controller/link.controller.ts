@@ -7,13 +7,11 @@ import * as linkService from "../service/link.service";
  */
 export const createLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Extract URL from body
     const { url } = req.body;
     if (!url) {
       return res.status(400).json({ error: "Missing URL in request body" });
     }
 
-    // Pass request context to service
     const user = req.user; // undefined if anonymous
     const shortLink = await linkService.createLink(url, user);
 
@@ -22,7 +20,7 @@ export const createLink = async (req: Request, res: Response, next: NextFunction
       data: shortLink,
     });
   } catch (err) {
-    next(err); // Pass to global error handler
+    next(err);
   }
 };
 
@@ -68,6 +66,27 @@ export const deleteLink = async (req: Request, res: Response, next: NextFunction
     }
 
     return res.status(200).json({ message: "Link deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Get all links owned by the logged-in user
+ */
+export const getMyLinks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const links = await linkService.getLinksByUser(user);
+
+    return res.status(200).json({
+      data: links,
+    });
   } catch (err) {
     next(err);
   }
