@@ -12,4 +12,8 @@ export declare const getLink: (req: Request, res: Response, next: NextFunction) 
  * Delete a link (registered users only)
  */
 export declare const deleteLink: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+/**
+ * Get all links owned by the logged-in user
+ */
+export declare const getMyLinks: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
 //# sourceMappingURL=link.controller.d.ts.map
