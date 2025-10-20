@@ -1,39 +1,31 @@
 import type { Request, Response, NextFunction } from "express";
+import { verifyToken } from "../../auth/jwt.js";
 
-/**
- * OPTIONAL auth
- * - If token exists → attach user
- * - If not → continue as anonymous
- */
 export const optionalAuthMiddleware = (
   req: Request,
   _res: Response,
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
+  if (!authHeader) return next();
 
-  if (!authHeader) {
-    return next();
-  }
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme !== "Bearer" || !token) return next();
 
-  // Placeholder logic (JWT ltr)
-  
-  const [, token] = authHeader.split(" ");
+  try {
+    const payload = verifyToken(token);
 
-  if (token && token.startsWith("user-")) {
     req.user = {
-      id: token,
-      role: "user",
+      id: payload.sub,
+      role: payload.role,
     };
+  } catch {
+    // invalid / expired token → anonymous
   }
 
   next();
 };
 
-/**
- * REQUIRED auth
- * - Must be authenticated
- */
 export const requireAuthMiddleware = (
   req: Request,
   res: Response,
@@ -44,6 +36,5 @@ export const requireAuthMiddleware = (
       error: "Authentication required",
     });
   }
-
   next();
 };
