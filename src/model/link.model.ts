@@ -1,13 +1,26 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface LinkDocument extends Document {
-  code: string;          // short code
-  url: string;           // original URL
-  userId?: string;       // optional: undefined if anonymous
+export interface Click {
+  ip: string;
+  userAgent?: string;
   createdAt: Date;
-  expiresAt?: Date;      // only for anonymous links
-  revoked: boolean;      // revoked = true means no longer active
 }
+
+export interface LinkDocument extends Document {
+  code: string;
+  url: string;
+  userId?: string;        // optional: undefined if anonymous
+  createdAt: Date;
+  expiresAt?: Date;       // only for anonymous links
+  revoked: boolean;       // revoked = true means no longer active
+  clicks: Click[];        // array of click info
+}
+
+const clickSchema = new Schema<Click>({
+  ip: { type: String, required: true },
+  userAgent: { type: String },
+  createdAt: { type: Date, default: () => new Date() },
+});
 
 const linkSchema = new Schema<LinkDocument>(
   {
@@ -16,6 +29,7 @@ const linkSchema = new Schema<LinkDocument>(
     userId: { type: mongoose.Types.ObjectId, ref: "User", default: null },
     expiresAt: { type: Date },
     revoked: { type: Boolean, default: false },
+    clicks: { type: [clickSchema], default: [] },
   },
   { timestamps: true }
 );
