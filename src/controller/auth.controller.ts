@@ -4,12 +4,8 @@ import * as authService from "../service/auth.service.js";
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Missing email or password" });
-    }
-
-    const result = await authService.register(email, password);
-    res.status(201).json(result);
+    const tokens = await authService.register(email, password);
+    res.status(201).json(tokens);
   } catch (err) {
     next(err);
   }
@@ -18,12 +14,28 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Missing email or password" });
-    }
+    const tokens = await authService.login(email, password);
+    res.json(tokens);
+  } catch (err) {
+    next(err);
+  }
+};
 
-    const result = await authService.login(email, password);
-    res.json(result);
+export const refresh = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { refreshToken } = req.body;
+    const tokens = await authService.refresh(refreshToken);
+    res.json(tokens);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { refreshToken } = req.body;
+    await authService.logout(refreshToken);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
