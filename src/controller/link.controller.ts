@@ -34,7 +34,7 @@ export const getLink = async (req: Request, res: Response, next: NextFunction) =
       return res.status(400).json({ error: "Missing code parameter" });
     }
 
-    const link = await linkService.getLinkByCode(code);
+    const link = await linkService.getLinkByCode(code,req);
     if (!link) {
       return res.status(404).json({ error: "Link not found or expired" });
     }
