@@ -78,9 +78,10 @@ app.get("/health", (_req: Request, res: Response) => {
   });
 });
 app.use("/api/v1/links", linkRoutes);
-
+app.use("/api/v1/auth", authRoutes);
 
 import linkRoutes from "./api/routes/link.routes.js";
+import authRoutes from "./api/routes/auth.routes.js"
 
 
 export default app;
