@@ -1,15 +1,15 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Click {
-  ip: string;
-  userAgent?: string;
+  ip: string | undefined;
+  userAgent?: string | undefined;
   createdAt: Date;
 }
 
 export interface LinkDocument extends Document {
   code: string;
   url: string;
-  userId?: string;        // optional: undefined if anonymous
+  userId?: string | undefined;        // optional: undefined if anonymous
   createdAt: Date;
   expiresAt?: Date;       // only for anonymous links
   revoked: boolean;       // revoked = true means no longer active

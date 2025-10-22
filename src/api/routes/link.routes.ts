@@ -20,14 +20,14 @@ router.get("/:code", linkController.getLink);
  * =====================================
  * AUTHENTICATED ROUTES
  * =====================================
- */
+*/
 
 // Apply auth middleware to all routes below
 router.use(optionalAuthMiddleware); // parse token if present
 router.use(requireAuthMiddleware);  // enforce authentication
 
 // Get all links owned by logged-in user
-router.get("/me", linkController.getMyLinks);
+router.get("/me/links", linkController.getMyLinks);
 
 // Delete link (only by owner)
 router.delete("/:code", linkController.deleteLink);

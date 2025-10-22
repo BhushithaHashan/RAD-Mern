@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import * as linkService from "../service/link.service";
+import * as linkService from "../service/link.service.js";
 
 /**
  * Create a new short link
@@ -30,15 +30,18 @@ export const createLink = async (req: Request, res: Response, next: NextFunction
 export const getLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.params;
-    if (!code) {
-      return res.status(400).json({ error: "Missing code parameter" });
+    if (!code) return res.status(400).json({ error: "Missing code parameter" });
+
+    const link = await linkService.getLinkByCode(code, req);
+    if (!link) return res.status(404).json({ error: "Link not found or expired" });
+
+    // If the request comes from a browser, redirect
+    const accept = req.headers.accept || "";
+    if (accept.includes("text/html")) {
+      return res.redirect(link.url);
     }
 
-    const link = await linkService.getLinkByCode(code,req);
-    if (!link) {
-      return res.status(404).json({ error: "Link not found or expired" });
-    }
-
+    // Otherwise (API client, curl, etc.), return JSON
     return res.status(200).json({
       data: link,
     });
@@ -46,6 +49,7 @@ export const getLink = async (req: Request, res: Response, next: NextFunction) =
     next(err);
   }
 };
+
 
 /**
  * Delete a link (registered users only)
@@ -57,6 +61,9 @@ export const deleteLink = async (req: Request, res: Response, next: NextFunction
 
     if (!user) {
       return res.status(401).json({ error: "Authentication required" });
+    }
+    if (!code) {
+        return res.status(400).json({ error: "Missing code parameter" });
     }
 
     const deleted = await linkService.deleteLink(code, user);
