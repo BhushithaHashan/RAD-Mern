@@ -1,190 +1,164 @@
-🚀 SwiftLink — Full Stack URL Shortener
+# SwiftLink — Full Stack URL Shortener
 
-SwiftLink is a production-grade URL shortening service built with a Layered Architecture (N-Tier). It features a robust Node.js/TypeScript backend and a modern React/Vite frontend, focusing on security, scalability, and clean code.
+**SwiftLink** is a modern URL shortening application built with a **Node.js + Express backend** and a **React + TypeScript frontend**. The app allows users to shorten URLs, manage them, and automatically handle authentication using JWTs with refresh token rotation. You can create short links anonymously or as a registered user, list all your links, and delete links you own.
 
-🏗️ Architecture Overview
+---
 
-The system is designed with strict Separation of Concerns:
+## Features
 
-API Layer: Express routes and security middleware.
+* Create short links (anonymous or authenticated)
+* Redirect or resolve short links
+* User-specific link management (list, delete)
+* JWT-based authentication with automatic token refresh
+* Secure backend with CORS, Helmet headers, and rate limiting
+* Frontend built with React, TypeScript, TailwindCSS, and Axios for API requests
 
-Controller Layer: Orchestrates HTTP requests and responses.
+---
 
-Service Layer: Core business logic (Short-code generation, validation).
+## Tech Stack
 
-Persistence Layer: Data models and MongoDB interaction via Mongoose.
+* **Backend:** Node.js, Express, TypeScript, MongoDB, JWT
+* **Frontend:** React, TypeScript, TailwindCSS, Axios, Vite
 
-✨ Features
+---
 
-Anonymous & Authenticated Shortening: Create links with or without an account.
+## Installation
 
-Link Management: Users can list, track, and delete their own links.
+### Backend
 
-JWT Security: Short-lived access tokens with Refresh Token Rotation.
+1. Clone the repository:
 
-Hardened Security: Protected by Helmet, CORS, and Rate Limiting.
+* Example: `git clone https://github.com/yourusername/swiftlink-backend.git`
+* Navigate into the folder: `cd swiftlink-backend`
 
-Responsive UI: Modern dashboard built with React and TailwindCSS.
+2. Install dependencies: run `npm install`.
 
-🛠️ Tech Stack
+3. Create a `.env` file in the root directory with the following example values:
 
-Layer
+* `PORT=5000` — server port
+* `MONGO_URI=mongodb://localhost:27017/swiftlink` — MongoDB connection
+* `JWT_SECRET=your_jwt_secret_here` — secret for signing JWTs
+* `JWT_EXPIRES_IN=900s` — access token lifetime (15 minutes)
+* `REFRESH_TOKEN_EXPIRES_IN=7d` — refresh token lifetime (7 days)
 
-Technology
+4. Start the backend server in development mode: `npm run dev`
+   The backend will be available at `http://localhost:5000`.
 
-Backend
+---
 
-Node.js, Express, TypeScript
+### Frontend
 
-Database
+1. Navigate to the frontend folder: `cd swiftlink-frontend`.
 
-MongoDB (Mongoose ODM)
+2. Install dependencies: run `npm install`.
 
-Frontend
+3. Create a `.env` file in the frontend root with:
 
-React, Vite, TypeScript, TailwindCSS
+* `VITE_API_BASE_URL=http://localhost:5000/api/v1`
 
-Security
+4. Start the frontend development server: `npm run dev`
+   Open your browser at `http://localhost:8080`.
 
-JWT, Bcrypt, Helmet.js, Express-Rate-Limit
+---
 
-API Client
+## Backend API
 
-Axios (with Interceptors for Auto-Refresh)
+### Authentication Routes
 
-🚀 Installation & Setup
+1. **Register:** POST `/api/v1/auth/register`
 
-1. Backend Setup
+   * Body: JSON `{ "email": "user@example.com", "password": "securePassword" }`
+   * Response: JSON with `accessToken` and `refreshToken`.
 
-# Navigate to backend
-cd swiftlink-backend
+2. **Login:** POST `/api/v1/auth/login`
 
-# Install dependencies
-npm install
+   * Body: JSON `{ "email": "user@example.com", "password": "securePassword" }`
+   * Response: JSON with `accessToken` and `refreshToken`.
 
-# Configure Environment (.env)
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/swiftlink
-JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRES_IN=900s        # 15 minutes
-REFRESH_TOKEN_EXPIRES_IN=7d
+3. **Refresh Token:** POST `/api/v1/auth/refresh`
 
+   * Body: JSON `{ "refreshToken": "<refreshToken>" }`
+   * Response: JSON with a new `accessToken` and a rotated `refreshToken`.
 
-2. Frontend Setup
+4. **Logout:** POST `/api/v1/auth/logout`
 
-# Navigate to frontend
-cd swiftlink-frontend
+   * Body: JSON `{ "refreshToken": "<refreshToken>" }`
+   * Response: 204 No Content, revokes refresh token.
 
-# Install dependencies
-npm install
+---
 
-# Configure Environment (.env)
-VITE_API_BASE_URL=http://localhost:5000/api/v1
+### Links Routes
 
+1. **Create Short Link:** POST `/api/v1/links`
 
-📡 API Documentation
+   * Body: JSON `{ "url": "https://www.example.com/some-page" }`
+   * Authorization: optional. If user is logged in, attach `Authorization: Bearer <accessToken>`.
+   * Response: JSON with the shortened link information.
 
-Auth Endpoints (/api/v1/auth)
+2. **Resolve Short Link:** GET `/api/v1/links/:code`
 
-Method
+   * URL parameter: `:code` is the short link code (e.g., `abc123`)
+   * Response: JSON with original URL and link metadata or a redirect.
 
-Route
+3. **Get User Links:** GET `/api/v1/links/me/links`
 
-Description
+   * Authorization: `Bearer <accessToken>` required
+   * Response: JSON array of all links owned by the authenticated user.
 
-POST
+4. **Delete Link:** DELETE `/api/v1/links/:code`
 
-/register
+   * Authorization: `Bearer <accessToken>` required
+   * URL parameter: `:code` of the link to delete
+   * Response: JSON message confirming deletion.
 
-Register a new user account
+---
 
-POST
+## Frontend API Integration
 
-/login
+The frontend uses **Axios** with interceptors to handle access tokens and automatic refresh:
 
-Authenticate and receive JWT tokens
+* `authApi` handles login, register, logout, and refresh token calls.
+* `linksApi` handles link creation, resolution, fetching user links, and deletion.
 
-POST
+The Axios instance automatically attaches the `Authorization` header for authenticated requests and refreshes expired tokens using the refresh token stored in `localStorage`.
 
-/refresh
+---
 
-Rotate Access & Refresh tokens
+## Example API Usage
 
-POST
+* **Register User:** POST `http://localhost:5000/api/v1/auth/register` with body `{ "email": "user@example.com", "password": "securePassword" }`
+* **Login User:** POST `http://localhost:5000/api/v1/auth/login` with same body
+* **Create Link:** POST `http://localhost:5000/api/v1/links` with body `{ "url": "https://www.example.com/pro" }` and optional `Authorization` header
+* **Get User Links:** GET `http://localhost:5000/api/v1/links/me/links` with `Authorization: Bearer <accessToken>`
+* **Resolve Short Link:** GET `http://localhost:5000/api/v1/links/abc123`
+* **Delete Link:** DELETE `http://localhost:5000/api/v1/links/abc123` with `Authorization: Bearer <accessToken>`
+* **Refresh Token:** POST `http://localhost:5000/api/v1/auth/refresh` with `{ "refreshToken": "<refreshToken>" }`
 
-/logout
+---
 
-Revoke Refresh Token and logout
+## Security
 
-Link Endpoints (/api/v1/links)
+* **Helmet:** HTTP header hardening to prevent XSS, clickjacking, and MIME sniffing
+* **CORS:** Only allows requests from the frontend origin
+* **Rate Limiting:** Prevents brute-force attacks
+* **JWT Tokens:** Short-lived access tokens with refresh token rotation
+* **Restricted HTTP Methods:** Only GET, POST, DELETE allowed globally
 
-Method
+---
 
-Route
+## Notes
 
-Auth Required
+* The backend listens on `http://localhost:5000` and frontend on `http://localhost:8080`. Adjust environment variables if deploying.
+* Short links are unique codes (e.g., `abc123`) and resolve to the original URL.
+* Access tokens are stored in memory; refresh tokens are stored in `localStorage`.
+* All endpoints and examples use placeholder domains (`example.com`) to make it easier to test.
 
-Description
+---
 
-POST
+## License
 
-/
+MIT License
 
-Optional
+---
 
-Create a short link
 
-GET
-
-/:code
-
-No
-
-Resolve and redirect to original URL
-
-GET
-
-/me/links
-
-Yes
-
-List all links for the current user
-
-DELETE
-
-/:code
-
-Yes
-
-Delete a specific link (Owner only)
-
-🔒 Security Implementation
-
-XSS Protection: Comprehensive input sanitization to prevent script injection.
-
-Rate Limiting: Throttles requests to prevent Brute Force and DoS attacks.
-
-Token Rotation: If a Refresh Token is compromised, the entire token family is invalidated.
-
-Helmet.js: Hardens HTTP headers against common web vulnerabilities.
-
-CORS: Restricts API access to authorized frontend origins only.
-
-💻 Frontend Usage (Axios Interceptors)
-
-The frontend automatically handles expired tokens using interceptors:
-
-// Auto-refresh logic on 401 response
-api.interceptors.response.use(
-  response => response,
-  async error => {
-    if (error.response.status === 401) {
-      // Trigger /auth/refresh logic here
-    }
-  }
-);
-
-
-📝 License
-
-Distributed under the MIT License.
