@@ -39,7 +39,7 @@ app.use(
 //  CORS — only allow frontend origins
 app.use(
   cors({
-    origin: ["https://your-frontend.com"], // restrict to  frontend
+    origin: ["http://localhost:8080"], // restrict to  frontend
     methods: ["GET", "POST","DELETE"], // allow only these HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"],
   })
